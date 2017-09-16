@@ -1,0 +1,2 @@
+class SDKGenerator(object):
+	pass
