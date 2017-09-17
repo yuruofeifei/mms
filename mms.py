@@ -2,7 +2,7 @@ import argparse
 import sys
 import mms
 
-from flask import Flask
+from flask import Flask, request
 from model_service import ModelService
 from sdk_generator import SDKGenerator
 
@@ -16,15 +16,15 @@ class MMS(object):
 		self.register_user_defined_func('max_prob_across_all_models', max_prob)
 
 		self.app = Flask('mms')
-		self.add_endpoint('predict', self.predict)
+		self.add_endpoint('predict/<model_name>', 'predict', self.predict)
 
 
-	def add_endpoint(self, endpoint, func):
-		self.app.add_url_rule('/' + endpoint, endpoint, func)
+	def add_endpoint(self, endpoint, api_name, func):
+		self.app.add_url_rule('/' + endpoint, api_name, func)
 
 
-	def predict(self, model_name='mnist', data='This is an apple.'):
-		return self.service.predict(model_name, data)
+	def predict(self, model_name):
+		return self.service.predict(model_name, request.args['url'])
 
 
 	def register_user_defined_func(self, func_name, func):

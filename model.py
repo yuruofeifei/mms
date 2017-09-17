@@ -21,7 +21,7 @@ class Model(object):
 
 	@staticmethod
 	def pull_model(name, path):
-		return getattr(mms, name)()
+		return getattr(mms, name)(path)
 
 	def preprocess(self, data, process_type):
 		return data
