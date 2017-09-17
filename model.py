@@ -16,7 +16,7 @@ class Model(object):
 		self.load_processor()
 
 	@abstractmethod
-	def predict(self, data):
+	def predict(self, data, preprocess_type=None, postprocess_type=None):
 		pass
 
 	@staticmethod
@@ -39,7 +39,9 @@ class Model(object):
 
 class SingleNodeModel(Model):
 	def load_processor(self):
-		config = {'resize': lambda x: x}
+		config = {
+			'resize': lambda x: x
+		}
 		for k, v in config.iteritems():
 			setattr(SingleNodeModel, k, v)
 

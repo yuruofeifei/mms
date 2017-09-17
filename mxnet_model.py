@@ -33,9 +33,9 @@ class MXNetModel(SingleNodeModel):
 		# print the top-5
 		prob = np.squeeze(prob)
 		a = np.argsort(prob)[::-1]
-		response = ''
+		response = {}
 		for i in a[0:5]:
-			response += 'probability=%f, class=%s <br><br>' %(prob[i], self.labels[i])
+			response[prob[i]] = self.labels[i]
 		return response
 
 
