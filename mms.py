@@ -7,7 +7,7 @@ from model_service import ModelService
 from sdk_generator import SDKGenerator
 
 def max_prob(class_prob_kv):
-	return [max(class_prob_kv.items())]
+	return dict([max(class_prob_kv.items())])
 
 class MMS(object):
 	def __init__(self):
@@ -26,13 +26,12 @@ class MMS(object):
 
 	def toHTML(self, prediction):
 		response = ''
-		for kv_pair in prediction:
+		for kv_pair in prediction.items():
 			response += 'probability=%f, class=%s <br><br>' % (kv_pair[0], kv_pair[1])
 		return response
 
 	def predict(self, model_name):
 		prediction = self.service.predict(model_name, request.args['url'])
-		prediction = sorted(prediction.items(), lambda x: x[0], reverse=True)
 		return self.toHTML(prediction)
 
 	def predict_across_all(self):

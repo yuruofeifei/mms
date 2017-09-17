@@ -28,7 +28,7 @@ This will setup a local server serving two resnet-18 models for prediction, I'm 
 I have also registered a user defined function which will find class with probability:
 ```python
 def max_prob(class_prob_kv):
-	return [max(class_prob_kv.items())]
+	return dict([max(class_prob_kv.items())])
 ```
 
 Try this request http://127.0.0.1:5000/predict/all?url=https%3A%2F%2Fwww.what-dog.net%2FImages%2Ffaces2%2Fscroll001.jpg ,
