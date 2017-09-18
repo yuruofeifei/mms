@@ -32,14 +32,13 @@ class nlp(object):
         vocab : dict of str -> int
             result vocabulary
         """
-        return rnn.io.encode_sentences(sentences, vocab=None, invalid_label=-1,
-                                       invalid_key='\n', start_label=0)
+        return rnn.io.encode_sentences(sentences, vocab, invalid_label, invalid_key, start_label)
 
 
 class image(object):
 
     @staticmethod
-    def read(filename, *args, **kwargs):
+    def read(filename, flag=1, to_rgb=True, out=None):
         """Read and decode an image to an NDArray.
 
         Note: `imread` uses OpenCV (not the CV2 Python library).
@@ -67,7 +66,7 @@ class image(object):
         >>> image.read("flower.jpg", flag=0, to_rgb=0)
         <NDArray 224x224x3 @cpu(0)>
         """
-        return img.imread(filename, *args, **kwargs)
+        return img.imread(filename, flag, to_rgb, out)
 
     @staticmethod
     def resize(src, new_width, new_height, interp=2):
