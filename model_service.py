@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
+URL_PREFIX = ('http://', 'https://', 's3://')
+
 
 class ModelService(object):
     """ModelService wraps up all preprocessing, inference and postprocessing
@@ -12,11 +14,11 @@ class ModelService(object):
         self.context = ctx
 
     @abstractmethod
-    def predict(self, data):
+    def inference(self, data):
         pass
 
 
-class SingleNodeModel(ModelService):
+class SingleNodeService(ModelService):
     """SingleNodeModel defines abstraction for model service which loads a
     single model.
     """
@@ -94,7 +96,7 @@ class SingleNodeModel(ModelService):
         return data
 
 
-class MultiNodesModel(ModelService):
+class MultiNodesService(ModelService):
     pass
 
 
