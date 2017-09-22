@@ -6,10 +6,8 @@ import os
 
 from mxnet.gluon.utils import download
 from mxnet.io import DataBatch
-from model_service import SingleNodeModel, MultiNodesModel
+from model_service import SingleNodeService, MultiNodesService, URL_PREFIX
 
-URL_PREFIX = ('http://', 'https://', 's3://')
-MODEL_DIR = 'models/'
 CONFIG_FILE = 'config.json'
 
 
@@ -38,24 +36,25 @@ def check_input_shape(inputs, metadata):
                                    len(input.shape))
         for idx in range(len(input.shape)):
             if idx != 0 and data_shape[idx] != 0:
-                assert data_shape[idx] \
-                    != input.shape[idx], "Input %s has different shape with " \
+                assert data_shape[idx] == \
+                       input.shape[idx], "Input %s has different shape with " \
                                          "metadata. %s expected but got %s." \
                                          % (data_name, data_shape, input.shape)
 
 
-class MXNetBaseService(SingleNodeModel):
+class MXNetBaseService(SingleNodeService):
     """MXNetBaseService defines the fundamental loading model and inference
        operations when serving MXNet model. This is a base class and needs to be
        inherited.
     """
     def __init__(self, path, ctx=mx.cpu()):
         super(MXNetBaseService, self).__init__(path, ctx)
+        curr_dir = os.getcwd()
         if path.lower.startswith(URL_PREFIX):
-            model_file = download(url=path, path=MODEL_DIR)
+            model_file = download(url=path, path=curr_dir)
             with tarfile.open(model_file) as tar:
-                tar.extractall(path=MODEL_DIR)
-            file_path = os.path.basename(model_file)
+                tar.extractall(path=curr_dir)
+            file_path = '%s/%s' % (curr_dir, os.path.basename(model_file))
         else:
             file_path = path
 
