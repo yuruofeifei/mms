@@ -2,8 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 
 class ModelService(object):
-    """
-    ModelService wraps up all preprocessing, inference and postprocessing
+    """ModelService wraps up all preprocessing, inference and postprocessing
     functions used by model service. It is defined in a flexible manner to
     be easily extended to support different frameworks.
     """
@@ -16,11 +15,11 @@ class ModelService(object):
     def predict(self, data):
         pass
 
+
 class SingleNodeModel(ModelService):
+    """SingleNodeModel defines abstraction for model service which loads a
+    single model.
     """
-	SingleNodeModel defines abstraction for model service which loads a
-	single model.
-	"""
     def inference(self, data):
         """
         Wrapper function to run preprocess, inference and postprocess functions.
@@ -34,7 +33,7 @@ class SingleNodeModel(ModelService):
         -------
         list of outputs to be sent back to client.
             data to be sent back
-		"""
+        """
         data = self._preprocess(data)
         data = self._inference(data)
         data = self._postprocess(data)
