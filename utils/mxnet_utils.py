@@ -2,7 +2,7 @@ import mxnet as mx
 from mxnet import rnn
 from mxnet import image as img
 
-class nlp(object):
+class NLP(object):
 
     @staticmethod
     def encode_sentences(sentences, vocab=None, invalid_label=-1, invalid_key='\n', start_label=0):
@@ -35,7 +35,7 @@ class nlp(object):
         return rnn.io.encode_sentences(sentences, vocab, invalid_label, invalid_key, start_label)
 
 
-class image(object):
+class Image(object):
 
     @staticmethod
     def read(filename, flag=1, to_rgb=True, out=None):
