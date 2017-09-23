@@ -37,9 +37,13 @@ you can see the prediction pair with max probability.
 
 ## Description:
 
-mms.py -> This file is flask entry point which can add endpoint, parse url, register user defined functions, setup flask localhost
+mms.py -> Program entry point, parse argument, initialize serving system
 
-model_service.py -> Service that will send request to model
+serving_frontend -> Serving system interface which can add endpoint, register user defined functions, setup web framework
+
+request_handler -> Currently using flask handler, parse url, start flask server
+
+service_manager.py -> model serving backend that will send request to model
 
 model.py -> Model interface which contains single-node/multi-node cluster
 
