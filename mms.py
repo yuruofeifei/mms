@@ -70,7 +70,6 @@ class MMS(object):
 		url = self.serving_frontend.get_query_string('url')
 		return self.prediction_to_html(self.serving_frontend.predict_across_all_models(url, self.max_prob))
 
-	
 	def describe_api(self):
 		return self.get_endpoint_mapping()
 
