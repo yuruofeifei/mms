@@ -2,7 +2,7 @@ import argparse
 import sys
 
 from serving_frontend import ServingFrontend
-from sdk_generator import SDKGenerator
+from client_sdk_generator import ClientGenerator
 
 
 def parse_args():
@@ -13,9 +13,12 @@ def parse_args():
 						action=StoreDictKeyPair,
 						metavar='KEY1=VAL1,KEY2=VAL2...', 
 						nargs="+", 
-						help='Delopy models')
+						help='Models to be deployed')
+
+	parser.add_argument('--process', help='Using user defined model service')
 
 	parser.add_argument('--gen-api', help='Generate API')
+
 	return parser.parse_args()
 
 class StoreDictKeyPair(argparse.Action):
@@ -25,8 +28,11 @@ class StoreDictKeyPair(argparse.Action):
 class MMS(object):
 	def __init__(self):
 		self.args = parse_args()
+		print self.args.process
+		print self.args.gen_api
+		exit(0)
 		self.serving_frontend = ServingFrontend()
-		self.serving_frontend.register_module('mxnet_vision_model')
+		self.serving_frontend.register_module('mxnet_model_service')
 		model_class_definations = self.serving_frontend.get_registered_models()
 		self.serving_frontend.load_models(self.args.models, 
 										  model_class_definations['MXNetVisionModel'])
