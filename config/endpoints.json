@@ -1,0 +1,63 @@
+{
+	"api-description": {
+		"method": "get",
+		"summary": "List all model serving apis",
+		"produces": "application/json",
+		"responses": {
+			"200": {
+				"description": "api description",
+				"apis": {
+					"type": "string"
+				}
+			},
+			"400": {
+				"description": "bad input parameter"
+			},
+			"500": {
+				"description": "internal server error"
+			}
+		},
+		"callback": "describe-apis"
+	},
+	"predict": {
+		"method": "post",
+		"summary": "Predict",
+		"consumes": "multipart/form-data",
+		"produces": "application/json",
+		"in-parameters": {
+			"image": {
+				"in": "formData",
+				"type": "file",
+				"required": "false",
+				"description": "Image to predict"
+			},
+			"input": {
+				"in": "formData",
+				"type": "string",
+				"required": "false",
+				"description": "String for input tensor or text"
+			},
+			"inputType": {
+				"in": "formData",
+				"type": "string",
+				"required": "true",
+				"description": "String for input tensor or text"
+			}
+		},
+		"responses": {
+			"200": {
+				"description": "prediction",
+				"predition": {
+					"type": "string"
+				}
+			},
+			"400": {
+				"description": "bad input parameter"
+			},
+			"500": {
+				"description": "internal server error"
+			}
+		},
+		"callback": "predict"
+	}
+}
