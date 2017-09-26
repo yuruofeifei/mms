@@ -64,7 +64,7 @@ class MXNetBaseService(SingleNodeService):
             self.signature = json.load(signature_file)
         data_names = []
         data_shapes = []
-        for input in self.signature['input']:
+        for input in self.signature['inputs']:
             data_names.append(input['data_name'])
             # Replace 0 entry in data shape with 1 for binding executor.
             data_shape = input['data_shape']
@@ -109,3 +109,22 @@ class MXNetBaseService(SingleNodeService):
         self.mx_model.forward(DataBatch(data))
         return self.mx_model.get_outputs()
 
+    def signature(self):
+        """Return the signature(input, output shape) for the model service. 
+
+        Returns
+        -------
+        Dictionary
+            Signature of the model service
+        """
+        return self.signature
+
+    def ping(self):
+        """Ping to get system's health
+
+        Returns
+        -------
+        String
+            MXNet version to show system is healthy
+        """
+        return mx.__version__

@@ -1,83 +1,36 @@
-import argparse
 import sys
 
+from arg_parser import ArgParser
 from serving_frontend import ServingFrontend
-from client_sdk_generator import ClientGenerator
+from client_sdk_generator import ClientSDKGenerator
 
-
-def parse_args():
-	parser = argparse.ArgumentParser(description='MXNet Model Serving')
-	
-	parser.add_argument('--models', 
-						required=True,
-						action=StoreDictKeyPair,
-						metavar='KEY1=VAL1,KEY2=VAL2...', 
-						nargs="+", 
-						help='Models to be deployed')
-
-	parser.add_argument('--process', help='Using user defined model service')
-
-	parser.add_argument('--gen-api', help='Generate API')
-
-	return parser.parse_args()
-
-class StoreDictKeyPair(argparse.Action):
-	def __call__(self, parser, namespace, values, option_string=None):
-		setattr(namespace, 'models', {kv.split("=", 1)[0]: kv.split("=", 1)[1] for kv in values})
 
 class MMS(object):
 	def __init__(self):
-		self.args = parse_args()
-		print self.args.process
-		print self.args.gen_api
-		exit(0)
+		self.args = ArgParser.parse_args()
 		self.serving_frontend = ServingFrontend()
+		
 		self.serving_frontend.register_module('mxnet_model_service')
-		model_class_definations = self.serving_frontend.get_registered_models()
-		self.serving_frontend.load_models(self.args.models, 
-										  model_class_definations['MXNetVisionModel'])
-		self.serving_frontend.add_endpoints({
-			'api_description': {
-				'endpoint': 'describe_api',
-				'method': 'GET',
-				'callback': self.describe_api
-			},
-			'predict': {
-				'endpoint': 'predict/<model_name>',
-				'method': 'GET',
-				'callback': self.predict_endpoint
-			},
-			'predict_all': {
-				'endpoint': 'predict/all',
-				'method': 'GET',
-				'callback': self.predict_all_endpoint
-			}
-		})
+		mode_class_name = 'MXNetBaseService'
+		# Register user defined model service
+		if self.args.process is not None:
+			class_defs = self.serving_frontend.register_module(self.args.process)
+			mode_class_name = class_defs[0].__name__
+
+		# Load models using registered model definitions
+		registered_models = self.serving_frontend.get_registered_models()
+		ModelClassDef = registered_models[mode_class_name]
+		self.serving_frontend.load_models(self.args.models, ModelClassDef)
+
+		# Setup endpoint
+		openapi_endpoints = self.serving_frontend.setup_openapi_endpoints()
+
+		# Generate client SDK
+		if self.args.gen_api is not None:
+			ClientSDKGenerator.generate(openapi_endpoints, self.args.gen_api)
 
 	def start_model_serving(self):
 		self.serving_frontend.start_model_serving()
-
-	# user defined function
-	def max_prob(self, class_prob_kv):
-		return dict([max(class_prob_kv.items())])
-
-	def prediction_to_html(self, prediction):
-		response = ''
-		for kv_pair in prediction.items():
-			response += 'probability=%f, class=%s <br><br>' % (kv_pair[0], kv_pair[1])
-		return response
-
-	# user defined endpoint
-	def predict_endpoint(self, model_name):
-		url = self.serving_frontend.get_query_string('url')
-		return self.prediction_to_html(self.serving_frontend.predict(model_name, url))
-
-	def predict_all_endpoint(self):
-		url = self.serving_frontend.get_query_string('url')
-		return self.prediction_to_html(self.serving_frontend.predict_across_all_models(url, self.max_prob))
-
-	def describe_api(self):
-		return self.get_endpoint_mapping()
 
 if __name__ == '__main__':
 	mms = MMS()
