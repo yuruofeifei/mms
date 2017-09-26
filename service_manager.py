@@ -2,9 +2,7 @@ import ast
 import inspect
 
 from storage import KVStorage
-from model import Model
-from mxnet_model import MXNetModel
-
+from model_service import ModelService, SingleNodeService, MultiNodesService
 
 
 class ServiceManager(object):
@@ -12,7 +10,6 @@ class ServiceManager(object):
 		# registry for model defination and user defined functions
 		self.model_registry = KVStorage('model')
 		self.func_registry = KVStorage('func')
-		self.add_model_to_registry(MXNetModel.__name__, MXNetModel)
 
 		# loaded models
 		self.loaded_models = KVStorage('loaded_model')
@@ -42,17 +39,7 @@ class ServiceManager(object):
 	def predict(self, model_name, data):
 		return self.loaded_models[model_name].predict(data)
 
-	def predict_across_all_models(self, data, func):
-		predictions = dict(reduce(
-			lambda x, y: x + y, 
-			map(
-				lambda m: self.predict(m, data).items(), 
-				self.loaded_models.keys()
-			)
-		))
-		return func(predictions)
-
 	def parse_models_from_module(self, user_defined_module_name):
 		module = __import__(user_defined_module_name)
 		classes = [cls[1] for cls in inspect.getmembers(module, inspect.isclass)]
-		return filter(lambda cls: cls is not Model and issubclass(cls, Model), classes)
+		return filter(lambda cls: cls is not ModelService and issubclass(cls, ModelService), classes)
