@@ -9,11 +9,11 @@ class RequestHandler(object):
 		pass
 
 	@abstractmethod
-	def get_query_string(self):
+	def get_form_data(self):
 		pass
 
 	@abstractmethod
-	def get_request_body(self):
+	def get_file_data(self):
 		pass
 
 	@abstractmethod

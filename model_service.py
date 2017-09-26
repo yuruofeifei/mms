@@ -17,6 +17,14 @@ class ModelService(object):
     def inference(self, data):
         pass
 
+    @abstractmethod
+    def signature(self):
+        pass
+
+    @abstractmethod
+    def ping(self):
+        pass
+
 
 class SingleNodeService(ModelService):
     """SingleNodeModel defines abstraction for model service which loads a
@@ -59,7 +67,6 @@ class SingleNodeService(ModelService):
         """
         return data
 
-    @abstractmethod
     def _preprocess(self, data):
         """
         Internal preprocess methods. Do transformation on raw
@@ -77,7 +84,6 @@ class SingleNodeService(ModelService):
         """
         return data
 
-    @abstractmethod
     def _postprocess(self, data):
         """
         Internal postprocess methods. Do transformation on inference output
