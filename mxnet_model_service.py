@@ -102,7 +102,7 @@ class MXNetBaseService(SingleNodeService):
         list of NDArray
             Inference output.
         """
-        # Check input shap
+        # Check input shape
         _check_input_shape(data, self.signature)
         self.mx_model.forward(DataBatch(data))
         return self.mx_model.get_outputs()

@@ -9,6 +9,7 @@ class MXNetVisionService(MXNetBaseService):
         img_list = []
         for idx, image in enumerate(data):
             input_shape = self.signature['inputs'][idx]['data_shape']
+            # We are assuming input shape is NCHW
             [h, w] = input_shape[2:]
             img_arr = Image.read(image)
             img_arr = Image.resize(img_arr, w, h)

@@ -214,8 +214,10 @@ class NDArray(object):
         Returns
         -------
         List
-            List of prediction results with top probability
+            List of probability: class pairs in sorted order
         """
-        prob = np.squeeze(data.asnumpy())
-        a = np.argsort(prob)[::-1]
-        return [{'probability': prob[i].tolist(), 'class': labels[i]} for i in a[0:top]]
+        sorted_prob = mx.nd.argsort(data[0], is_ascend=False)
+        top_prob = map(lambda x: int(x.asscalar()), sorted_prob[0:top])
+        return [{'probability': float(data[0, i].asscalar()), 'class': labels[i]} 
+                for i in top_prob]
+        
