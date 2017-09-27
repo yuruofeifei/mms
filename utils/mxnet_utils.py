@@ -1,3 +1,5 @@
+import PIL
+import numpy as np
 import mxnet as mx
 from mxnet import rnn
 from mxnet import image as img
@@ -66,7 +68,28 @@ class Image(object):
         >>> image.read("flower.jpg", flag=0, to_rgb=0)
         <NDArray 224x224x3 @cpu(0)>
         """
-        return img.imread(filename, flag, to_rgb, out)
+        img_arr = img.imread(filename, flag, to_rgb, out)
+        img_arr = mx.nd.transpose(img_arr, (2,0,1))
+        img_arr = mx.nd.expand_dims(img_arr, axis=0)
+        return img_arr
+
+    @staticmethod
+    def write(filename, img_arr, flag=1):
+        """Write an NDArray
+
+        Parameters
+        ----------
+        filename : str
+            Name of the image file to be written to.
+        img_arr : NDArray
+            Image in NDArray format with shape (channel, width, height)
+        flag : {0, 1}, default 1
+            1 for three channel color output. 0 for grayscale output.
+        """
+        img_arr = mx.nd.transpose(img_arr, (1,2,0)).astype(np.uint8).asnumpy()
+        mode = 'RGB' if flag == 1 else 'L'
+        output = PIL.Image.fromarray(img_arr, mode)
+        output.save(filename)
 
     @staticmethod
     def resize(src, new_width, new_height, interp=2):
