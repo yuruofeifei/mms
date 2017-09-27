@@ -41,7 +41,7 @@ class Image(object):
 
     @staticmethod
     def transform_shape(img_arr,  dim_order='NCHW'):
-        """Rearrange image NDArray shape to 'NCWH' or 'NHWC' which 
+        """Rearrange image NDArray shape to 'NCHW' or 'NHWC' which 
         is valid for MXNet model input.
         
         Parameters
@@ -200,3 +200,22 @@ class Image(object):
         """
         return img.color_normalize(src, mean, std)
 
+class NDArray(object):
+
+    @staticmethod
+    def top_probability(data, labels, top=5):
+        """Get top probability prediction from NDArray
+
+        Parameters
+        ----------
+        src : NDArray
+            NDArray to be predicted
+
+        Returns
+        -------
+        List
+            List of prediction results with top probability
+        """
+        prob = np.squeeze(data.asnumpy())
+        a = np.argsort(prob)[::-1]
+        return [{'probability': prob[i].tolist(), 'class': labels[i]} for i in a[0:top]]

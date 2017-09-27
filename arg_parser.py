@@ -20,6 +20,8 @@ class ArgParser(object):
 
 		parser.add_argument('--gen-api', help='Generate API')
 
+		parser.add_argument('--port', help='Port')
+
 		return parser.parse_args()
 
 

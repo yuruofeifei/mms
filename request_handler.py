@@ -17,5 +17,5 @@ class RequestHandler(object):
         pass
 
     @abstractmethod
-    def start_handler(self):
+    def start_handler(self, host, port):
         pass

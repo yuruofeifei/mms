@@ -27,7 +27,6 @@ def _check_input_shape(inputs, signature):
                                            % (len(signature['input']), len(inputs))
     for input, sig_input in zip(inputs, signature['inputs']):
         assert isinstance(input, mx.nd.NDArray), "Each input must be NDArray."
-        print input.shape
         assert len(input.shape) == \
                len(sig_input['data_shape']), "Shape dimension of input %s mismatches with " \
                                 "signature. %d expected but got %d." \
@@ -54,7 +53,6 @@ class MXNetBaseService(SingleNodeService):
                      if path.lower().startswith(URL_PREFIX) else path
         model_name = os.path.splitext(os.path.basename(model_file))[0]
         model_dir = '%s/%s' % (os.path.dirname(model_file), model_name)
-        print model_file
         with zipfile.ZipFile(model_file) as zip:
             zip.extractall(path=os.path.dirname(model_file))
 
