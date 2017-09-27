@@ -41,7 +41,7 @@ class Image(object):
 
     @staticmethod
     def transform_shape(img_arr,  dim_order='NCHW'):
-        """Rearrange image NDArray shape to 'NCWH' or 'NWHC' which 
+        """Rearrange image NDArray shape to 'NCWH' or 'NHWC' which 
         is valid for MXNet model input.
         
         Parameters
