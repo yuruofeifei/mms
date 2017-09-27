@@ -38,6 +38,7 @@ class NLP(object):
 
 
 class Image(object):
+
     @staticmethod
     def transform_shape(img_arr,  dim_order='NCHW'):
         """Rearrange image NDArray shape to 'NCWH' or 'NWHC' which 
@@ -59,7 +60,6 @@ class Image(object):
             img_arr = mx.nd.transpose(img_arr, (2, 0, 1))
         output = mx.nd.expand_dims(img_arr, axis=0)
         return output
-
 
     @staticmethod
     def read(filename, flag=1, to_rgb=True, out=None):
