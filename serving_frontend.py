@@ -10,8 +10,8 @@ class ServingFrontend(object):
         self.service_manager = ServiceManager()
         self.handler = FlaskRequestHandler()
 
-    def start_model_serving(self):
-        self.handler.start_handler()
+    def start_model_serving(self, host, port):
+        self.handler.start_handler(host, port)
 
     def load_models(self, models, ModelClassDef):
         for model_name, model_path in models.iteritems():
@@ -48,7 +48,7 @@ class ServingFrontend(object):
         api_name = api_definition[endpoint][method]['operationId']
         self.handler.add_endpoint(api_name, endpoint, partial(callback, **kwargs), [method.upper()])
 
-    def setup_openapi_endpoints(self):
+    def setup_openapi_endpoints(self, host, port):
         models = self.service_manager.get_loaded_models()
         # TODO: not hardcode host:port
         self.openapi_endpoints = {
@@ -57,7 +57,7 @@ class ServingFrontend(object):
                 'version': '1.0.0',
                   'title': 'Model Serving Apis'
               },
-              'host': '127.0.0.1:5000',
+              'host': host + ':' + str(port),
               'schemes': ['http'],
               'paths': {},
           }

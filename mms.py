@@ -10,6 +10,10 @@ class MMS(object):
         self.args = ArgParser.parse_args()
         self.serving_frontend = ServingFrontend()
         
+        # Port 
+        self.port = self.args.port or 8080
+        self.host = '127.0.0.1'
+
         self.serving_frontend.register_module('mxnet_model_service')
         mode_class_name = 'MXNetBaseService'
         # Register user defined model service
@@ -26,14 +30,14 @@ class MMS(object):
         self.serving_frontend.load_models(self.args.models, ModelClassDef)
 
         # Setup endpoint
-        openapi_endpoints = self.serving_frontend.setup_openapi_endpoints()
+        openapi_endpoints = self.serving_frontend.setup_openapi_endpoints(self.host, self.port)
 
         # Generate client SDK
         if self.args.gen_api is not None:
             ClientSDKGenerator.generate(openapi_endpoints, self.args.gen_api)
 
     def start_model_serving(self):
-        self.serving_frontend.start_model_serving()
+        self.serving_frontend.start_model_serving(self.host, self.port)
 
 if __name__ == '__main__':
     mms = MMS()

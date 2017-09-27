@@ -26,8 +26,8 @@ class FlaskRequestHandler(RequestHandler):
             return files
         return files[name]
 
-    def start_handler(self):
-        self.app.run()
+    def start_handler(self, host, port):
+        self.app.run(host=host, port=port)
 
     def jsonify(self, response):
         return jsonify(response)

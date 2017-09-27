@@ -10,4 +10,7 @@ class ClientSDKGenerator(object):
         f = open('build/openapi.json', 'w')
         json.dump(openapi_endpoints, f, indent=4)
         f.flush()
-        os.system("java -jar utils/swagger-codegen-cli-2.2.1.jar generate -i build/openapi.json -l python -o build")
+        os.system('java -jar utils/swagger-codegen-cli-2.2.1.jar generate \
+                   -i build/openapi.json \
+                   -o build \
+                   -l ' + sdk_lanugage)
