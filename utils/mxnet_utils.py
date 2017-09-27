@@ -62,7 +62,7 @@ class Image(object):
         return output
 
     @staticmethod
-    def read(filename, flag=1, to_rgb=True, out=None):
+    def read(buf, flag=1, to_rgb=True, out=None):
         """Read and decode an image to an NDArray.
 
         Note: `imread` uses OpenCV (not the CV2 Python library).
@@ -70,8 +70,8 @@ class Image(object):
 
         Parameters
         ----------
-        filename : str
-            Name of the image file to be loaded.
+        buf : str/bytes or numpy.ndarray
+            Binary image data as string or numpy ndarray.
         flag : {0, 1}, default 1
             1 for three channel color output. 0 for grayscale output.
         to_rgb : bool, default True
@@ -87,10 +87,11 @@ class Image(object):
 
         Example
         -------
-        >>> image.read("flower.jpg", flag=0, to_rgb=0)
+        >>> buf = open("flower.jpg", 'rb').read()
+        >>> image.read(buf)
         <NDArray 224x224x3 @cpu(0)>
         """
-        return img.imread(filename, flag, to_rgb, out)
+        return img.imdecode(buf, flag, to_rgb, out)
 
     @staticmethod
     def write(filename, img_arr, flag=1):

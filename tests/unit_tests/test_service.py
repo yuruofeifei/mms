@@ -19,9 +19,10 @@ def test_vision_inference():
     raw_image = 'input.jpg'
     data = mx.nd.random_uniform(0, 255, shape=(3, 224, 224))
     Image.write(raw_image, data)
+    img_buf = open(raw_image, 'rb').read()
 
     service = mx_vision_service(path=model_path)
-    output = service.inference([raw_image])
+    output = service.inference([img_buf])
     assert output[0].shape == (batch_size, output_length)
     os.remove(raw_image)
 
