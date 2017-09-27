@@ -22,11 +22,12 @@ def _check_input_shape(inputs, signature):
         Dictionary containing model signature.
     """
     assert isinstance(inputs, list), "Input data must be a list."
-    assert len(inputs) == len(signature['input']), "Input number mismatches with " \
+    assert len(inputs) == len(signature['inputs']), "Input number mismatches with " \
                                            "signature. %d expected but got %d." \
                                            % (len(signature['input']), len(inputs))
-    for input, sig_input in zip(inputs, signature['input']):
+    for input, sig_input in zip(inputs, signature['inputs']):
         assert isinstance(input, mx.nd.NDArray), "Each input must be NDArray."
+        print input.shape
         assert len(input.shape) == \
                len(sig_input['data_shape']), "Shape dimension of input %s mismatches with " \
                                 "signature. %d expected but got %d." \
@@ -53,6 +54,7 @@ class MXNetBaseService(SingleNodeService):
                      if path.lower().startswith(URL_PREFIX) else path
         model_name = os.path.splitext(os.path.basename(model_file))[0]
         model_dir = '%s/%s' % (os.path.dirname(model_file), model_name)
+        print model_file
         with zipfile.ZipFile(model_file) as zip:
             zip.extractall(path=os.path.dirname(model_file))
 
@@ -88,8 +90,6 @@ class MXNetBaseService(SingleNodeService):
         if synset:
             self.labels = [line.strip() for line in open(synset).readlines()]
 
-
-
     def _inference(self, data):
         """Internal inference methods for MXNet. Run forward computation and
         return output.
@@ -104,20 +104,10 @@ class MXNetBaseService(SingleNodeService):
         list of NDArray
             Inference output.
         """
-        # Check input shape
+        # Check input shap
         _check_input_shape(data, self.signature)
         self.mx_model.forward(DataBatch(data))
         return self.mx_model.get_outputs()
-
-    def signature(self):
-        """Return the signature(input, output shape) for the model service. 
-
-        Returns
-        -------
-        Dictionary
-            Signature of the model service
-        """
-        return self.signature
 
     def ping(self):
         """Ping to get system's health

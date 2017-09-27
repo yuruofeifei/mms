@@ -1,3 +1,5 @@
+import mxnet as mx
+
 from mxnet_model_service import MXNetBaseService
 from utils.mxnet_utils import Image
 
