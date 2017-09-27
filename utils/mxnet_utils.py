@@ -63,6 +63,7 @@ class Image(object):
 
     @staticmethod
     def read(buf, flag=1, to_rgb=True, out=None):
+
         """Read and decode an image to an NDArray.
 
         Note: `imread` uses OpenCV (not the CV2 Python library).

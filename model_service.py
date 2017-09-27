@@ -18,10 +18,6 @@ class ModelService(object):
         pass
 
     @abstractmethod
-    def signature(self):
-        pass
-
-    @abstractmethod
     def ping(self):
         pass
 
