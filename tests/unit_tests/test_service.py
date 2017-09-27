@@ -4,6 +4,7 @@ sys.path.append('../..')
 
 import mxnet as mx
 from mxnet_vision_service import MXNetVisionService as mx_vision_service
+from utils.mxnet_utils import Image
 
 def test_vision_init():
     model_path = '../../models/resnet-18.zip'
@@ -15,11 +16,14 @@ def test_vision_inference():
     model_path = '../../models/resnet-18.zip'
     batch_size = 1
     output_length = 1000
-    data = mx.nd.random_uniform(shape=(batch_size, 3, 224, 224))
+    raw_image = 'input.jpg'
+    data = mx.nd.random_uniform(0, 255, shape=(3, 224, 224))
+    Image.write(raw_image, data)
 
     service = mx_vision_service(path=model_path)
-    output = service._inference([data])
+    output = service.inference([raw_image])
     assert output[0].shape == (batch_size, output_length)
+    os.remove(raw_image)
 
 
 if __name__ == '__main__':

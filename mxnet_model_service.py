@@ -30,8 +30,8 @@ def _check_input_shape(inputs, signature):
         assert len(input.shape) == \
                len(sig_input['data_shape']), "Shape dimension of input %s mismatches with " \
                                 "signature. %d expected but got %d." \
-                                % (sig_input['data_name'], sig_input['data_shape'],
-                                   len(sig_input['data_shape']))
+                                % (sig_input['data_name'], len(sig_input['data_shape']),
+                                   len(input_shape))
         for idx in range(len(input.shape)):
             if idx != 0 and sig_input['data_shape'][idx] != 0:
                 assert sig_input['data_shape'][idx] == \
