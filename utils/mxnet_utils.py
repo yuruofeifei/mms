@@ -38,6 +38,28 @@ class NLP(object):
 
 
 class Image(object):
+    @staticmethod
+    def transform_shape(img_arr,  dim_order='NCHW'):
+        """Rearrange image NDArray shape to 'NCWH' or 'NWHC' which 
+        is valid for MXNet model input.
+        
+        Parameters
+        ----------
+        img_arr : NDArray
+            Image in NDArray format with shape (channel, width, height)
+        dim_order : str
+            Image dimension order. Valid values are 'NCHW' and 'NHWC'
+        
+        Returns
+        -------
+        output : NDArray
+            Image in NDArray format with dim_order shape
+        """
+        if dim_order == 'NCHW':
+            img_arr = mx.nd.transpose(img_arr, (2, 0, 1))
+        output = mx.nd.expand_dims(img_arr, axis=0)
+        return output
+
 
     @staticmethod
     def read(filename, flag=1, to_rgb=True, out=None):
@@ -68,10 +90,7 @@ class Image(object):
         >>> image.read("flower.jpg", flag=0, to_rgb=0)
         <NDArray 224x224x3 @cpu(0)>
         """
-        img_arr = img.imread(filename, flag, to_rgb, out)
-        img_arr = mx.nd.transpose(img_arr, (2,0,1))
-        img_arr = mx.nd.expand_dims(img_arr, axis=0)
-        return img_arr
+        return img.imread(filename, flag, to_rgb, out)
 
     @staticmethod
     def write(filename, img_arr, flag=1):
@@ -93,10 +112,7 @@ class Image(object):
 
     @staticmethod
     def resize(src, new_width, new_height, interp=2):
-        """Read and decode an image to an NDArray.
-
-        Note: `imread` uses OpenCV (not the CV2 Python library).
-        MXNet must have been built with USE_OPENCV=1 for `imdecode` to work.
+        """Resizes image to new_width and new_height.
 
         Parameters
         ----------
