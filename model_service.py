@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 URL_PREFIX = ('http://', 'https://', 's3://')
 
@@ -19,6 +19,10 @@ class ModelService(object):
 
     @abstractmethod
     def ping(self):
+        pass
+
+    @abstractproperty
+    def signature(self):
         pass
 
 
@@ -100,6 +104,4 @@ class SingleNodeService(ModelService):
 
 class MultiNodesService(ModelService):
     pass
-
-
 

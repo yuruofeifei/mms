@@ -61,10 +61,10 @@ class MXNetBaseService(SingleNodeService):
             raise RuntimeError('Signature file is not found. Please put signature.json '
                                'into the model file directory.')
         with open(signature_file_path) as signature_file:
-            self.signature = json.load(signature_file)
+            self._signature = json.load(signature_file)
         data_names = []
         data_shapes = []
-        for input in self.signature['inputs']:
+        for input in self._signature['inputs']:
             data_names.append(input['data_name'])
             # Replace 0 entry in data shape with 1 for binding executor.
             data_shape = input['data_shape']
@@ -108,11 +108,24 @@ class MXNetBaseService(SingleNodeService):
         return self.mx_model.get_outputs()
 
     def ping(self):
-        """Ping to get system's health
+        """Ping to get system's health.
 
         Returns
         -------
         String
-            MXNet version to show system is healthy
+            MXNet version to show system is healthy.
         """
         return mx.__version__
+
+    @property
+    def signature(self):
+        """Signiture for model service.
+
+        Returns
+        -------
+        Dict
+            Model service signiture.
+        """
+        return self._signature
+
+

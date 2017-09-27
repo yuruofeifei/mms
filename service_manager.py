@@ -6,40 +6,118 @@ from model_service import ModelService, SingleNodeService, MultiNodesService
 
 
 class ServiceManager(object):
+    """ServiceManager will be responsible for storing infomation and managing
+    model services. ServiceManager will directly talk to model services.
+    In later phase, ServiceManager will also be responsible for model versioning,
+    prediction batching and caching...
+    """
     def __init__(self):
+        """
+        Initialize Service Manager.
+        """
+
         # registry for model defination and user defined functions
-        self.model_registry = KVStorage('model')
+        self.modelservice_registry = KVStorage('modelservice')
         self.func_registry = KVStorage('func')
 
         # loaded models
-        self.loaded_models = KVStorage('loaded_model')
+        self.loaded_modelservices = KVStorage('loaded_modelservices')
 
-    def register_user_defined_func(self, func_name, func):
-        self.func_registry[func_name] = func
+    def get_modelservices_registry(self, modelservice_names=None):
+        """
+        Get all registered Model Service Class Definitions in a dictionary 
+        from internal registry according to name or list of names. 
+        If nothing is passed, all registered model services will be returned.
 
-    def get_model_registry(self, model_names=None):
-        if model_names is None:
-            return self.model_registry
-        return {model_name: self.model_registry[model_name] for model_name in model_names}
+        Parameters
+        ----------
+        modelservice_names : List, optional
+            Names to retrieve registered model services.
+            
+        Returns
+        ----------
+        Dict of name, model service pairs
+            Registered model services according to given names.
+        """
+        if modelservice_names is None:
+            return self.modelservice_registry
 
-    def add_model_to_registry(self, model_name, ModelClassDef):
-        self.model_registry[model_name] = ModelClassDef
+        return {
+                    modelservice_name: self.modelservice_registry[modelservice_name]
+                    for modelservice_name in modelservice_names
+                }
 
-    def get_loaded_models(self, model_names=None):
-        if model_names is None:
-            return self.loaded_models
-        return {model_name: self.loaded_models[model_name] for model_name in model_names}
+    def add_modelservice_to_registry(self, modelservice_name, ModelServiceClassDef):
+        """
+        Add a model service to internal registry.
 
-    def get_user_defined_func(self, func_name):
-        return self.func_registry[func_name]
+        Parameters
+        ----------
+        modelservice_name : string
+            Model service name to be added.
+        ModelServiceClassDef: python class  
+            Model Service Class Definition which can initialize a model service.
+        """
+        self.modelservice_registry[modelservice_name] = ModelServiceClassDef
 
-    def load_model(self, model_name, model_path, ModelClassDef):
-        self.loaded_models[model_name] = ModelClassDef(model_path)
+    def get_loaded_modelservices(self, modelservice_names=None):
+        """
+        Get all model services which are loaded in the system into a dictionary 
+        according to name or list of names. 
+        If nothing is passed, all loaded model services will be returned.
 
-    def predict(self, model_name, data):
-        return self.loaded_models[model_name].predict(data)
+        Parameters
+        ----------
+        modelservice_names : List, optional
+             Model service names to retrieve loaded model services.
+            
+        Returns
+        ----------
+        Dict of name, model service pairs
+            Loaded model services according to given names.
+        """
+        if modelservice_names is None:
+            return self.loaded_modelservices
 
-    def parse_models_from_module(self, user_defined_module_name):
+        return {
+                    modelservice_name: self.loaded_models[modelservice_name] 
+                    for modelservice_name in modelservice_names
+                }
+
+    def load_model(self, model_name, model_path, ModelServiceClassDef):
+        """
+        Load a single model into a model service by using 
+        user passed Model Service Class Definitions.
+
+        Parameters
+        ----------
+        model_name : string
+            Model name
+        model_path: stirng
+            Model path which can be url or local file path.
+        ModelServiceClassDef: python class
+            Model Service Class Definition which can initialize a model service.
+        """
+        self.loaded_modelservices[model_name] = ModelServiceClassDef(model_path)
+
+    def parse_modelservices_from_module(self, user_defined_module_name):
+        """
+        Parse user defined module to get all model service classe in it.
+
+        Parameters
+        ----------
+        user_defined_module_name : Python module name
+            A python module will be parsed by given name.
+            
+        Returns
+        ----------
+        List of model service class definitions.
+            Those parsed python class can be used to initialize model service.
+        """
         module = __import__(user_defined_module_name)
+
+        # Parsing the module to get all defined classes
         classes = [cls[1] for cls in inspect.getmembers(module, inspect.isclass)]
+
+        # Check if class is subclass of base ModelService class
         return filter(lambda cls: cls is not ModelService and issubclass(cls, ModelService), classes)
