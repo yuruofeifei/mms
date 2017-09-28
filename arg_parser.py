@@ -1,5 +1,4 @@
 import argparse
-from export_model import export_model
 
 class StoreDictKeyPair(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -23,14 +22,17 @@ class ArgParser(object):
 
         parser.add_argument('--port', help='Port')
 
-        subparsers = parser.add_subparsers(help='sub-command help')
+        return parser.parse_args()
 
-        parser_export = subparsers.add_parser('export', help='export help')
+    @staticmethod
+    def parse_export_args():
+        parser_export = argparse.ArgumentParser(prog='model-export', description='MXNet Model Export')
 
-        parser_export.add_argument('--models',
+        parser_export.add_argument('--model',
                                    required=True,
                                    metavar='KEY=VAL',
-                                   help='Model to be exported')
+                                   help='Model to be exported. Key is model name. '
+                                        'Value is path contains model files.')
 
         parser_export.add_argument('--signature',
                                    required=True,
@@ -41,7 +43,10 @@ class ArgParser(object):
                                    type=str,
                                    help='Path to synset file')
 
-        parser_export.set_defaults(func=export_model)
-        return parser.parse_args()
+        parser_export.add_argument('--destination',
+                                   type=str,
+                                   help='Path to exported model')
+
+        return parser_export.parse_args()
 
 
