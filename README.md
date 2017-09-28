@@ -185,3 +185,6 @@ Flask, MXNet, numpy, JAVA(7+, required by swagger codegen)
 
 ## Design:
 To be updated
+
+## Testing:
+python -m unittest tests/unit_tests/test_serving_frontend

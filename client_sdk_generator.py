@@ -1,5 +1,11 @@
 import json
 import os
+import subprocess
+
+from log import get_logger
+
+
+logger = get_logger(__name__)
 
 
 class ClientSDKGenerator(object):
@@ -19,14 +25,22 @@ class ClientSDKGenerator(object):
         """
 
         # Serialize OpenAPI definition to a file
-        if not os.path.exists('build'):
-            os.makedirs('build')
-        f = open('build/openapi.json', 'w')
-        json.dump(openapi_endpoints, f, indent=4)
-        f.flush()
-
-        # Use Swagger codegen tool to generate client sdk in target language
-        os.system('java -jar utils/swagger-codegen-cli-2.2.1.jar generate \
-                   -i build/openapi.json \
-                   -o build \
-                   -l ' + sdk_lanugage)
+        try:
+            
+            if not os.path.exists('build'):
+                os.makedirs('build')
+            f = open('build/openapi.json', 'w')
+            json.dump(openapi_endpoints, f, indent=4)
+            f.flush()
+            
+            # Use Swagger codegen tool to generate client sdk in target language
+            with open(os.devnull, 'wb') as devnull:
+                sdk_proc = subprocess.Popen(('java -jar utils/swagger-codegen-cli-2.2.1.jar generate \
+                                              -i build/openapi.json \
+                                              -o build \
+                                              -l %s' % sdk_lanugage).split(), stdout=devnull)
+                sdk_proc.kill()
+            
+            logger.info('Client SDK for %s is generated.' % sdk_lanugage)
+        except Exception, e:
+            raise Exception('Failed to generate client sdk: ' + str(e))

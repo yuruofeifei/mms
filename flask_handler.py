@@ -1,5 +1,9 @@
 from flask import Flask, request, jsonify, send_file
+from log import get_logger
 from request_handler import RequestHandler
+
+
+logger = get_logger(__name__)
 
 
 class FlaskRequestHandler(RequestHandler):
@@ -27,7 +31,10 @@ class FlaskRequestHandler(RequestHandler):
         port: int
             Port to setup handler.
         """
-        self.app.run(host=host, port=port)
+        try:
+            self.app.run(host=host, port=port)
+        except Exception, e:
+            raise Exception('Flask handler failed to start: ' + str(e))
 
     def add_endpoint(self, api_name, endpoint, callback, methods):
         """
@@ -48,9 +55,12 @@ class FlaskRequestHandler(RequestHandler):
         """
 
         # Flask need to be passed with a method list
-        assert isinstance(methods, list) 
-        self.app.add_url_rule(endpoint, api_name, callback, methods=methods)
-
+        try:
+            assert isinstance(methods, list), 'methods should be a list: [GET, POST] by Flask.'
+            self.app.add_url_rule(endpoint, api_name, callback, methods=methods)
+        except Exception, e:
+            raise Exception('Flask handler failed to add endpoints: ' + str(e))
+        
     def get_query_string(self, field=None):
         """
         Get query string from a request.
@@ -65,6 +75,7 @@ class FlaskRequestHandler(RequestHandler):
         Object: 
             Field data from query string.
         """
+        logger.info('Getting query string from request.')
         if field is None:
             return request.args
 
@@ -84,6 +95,7 @@ class FlaskRequestHandler(RequestHandler):
         Object: 
             Field data from form data.
         """
+        logger.info('Getting from data from request.')
         form = {k: v[0] for k, v in dict(request.form).iteritems()}
         if field is None:
             return form
@@ -104,6 +116,7 @@ class FlaskRequestHandler(RequestHandler):
         Object: 
             Field data from file data.
         """
+        logger.info('Getting file data from request.')
         files = {k: v[0] for k, v in dict(request.files).iteritems()}
         if field is None:
             return files
@@ -125,6 +138,7 @@ class FlaskRequestHandler(RequestHandler):
         Response: 
             Jsonified response.
         """
+        logger.info('Jsonifying the response: ' + str(response))
         return jsonify(response)
 
     def send_file(self, file, mimetype):
@@ -144,4 +158,5 @@ class FlaskRequestHandler(RequestHandler):
         Response: 
             Response with file to be sent.
         """
+        logger.info('Sending file with mimetype: ' + mimetype)
         return send_file(file, mimetype)

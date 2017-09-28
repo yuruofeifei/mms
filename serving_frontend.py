@@ -3,27 +3,36 @@ from functools import partial
 
 from service_manager import ServiceManager
 from flask_handler import FlaskRequestHandler
+from log import get_logger
+
+
+logger = get_logger(__name__)
 
 
 class ServingFrontend(object):
-    """ServingFrontend warps up all internal services including 
+    '''ServingFrontend warps up all internal services including 
     model service manager, request handler. It provides all public 
     apis for users to extend and use our system.
-    """
+    '''
     def __init__(self, app_name):
-        """
+        '''
         Initialize handler for FlaskHandler and ServiceManager.
 
         Parameters
         ----------
         app_name : string
             App name to initialize request handler.
-        """
-        self.service_manager = ServiceManager()
-        self.handler = FlaskRequestHandler(app_name)
+        '''
+        try:
+            self.service_manager = ServiceManager()
+            self.handler = FlaskRequestHandler(app_name)
+
+            logger.info('Initialized serving frontend.')
+        except Exception, e:
+            raise Exception('Failed to initialize serving frontend: ' + str(e))
 
     def start_model_serving(self, host, port):
-        """
+        '''
         Start model serving using given host and port.
 
         Parameters
@@ -32,11 +41,11 @@ class ServingFrontend(object):
             Host that server will use.
         port: int
             Port that server will use.
-        """
+        '''
         self.handler.start_handler(host, port)
 
     def load_models(self, models, ModelServiceClassDef):
-        """
+        '''
         Load models by using user passed Model Service Class Definitions.
 
         Parameters
@@ -45,13 +54,13 @@ class ServingFrontend(object):
             List of model_name, model_path pairs that will be initialized.
         ModelServiceClassDef: python class
             Model Service Class Definition which can initialize a model service.
-        """
+        '''
         for model_name, model_path in models.iteritems():
             self.service_manager.load_model(model_name, model_path, ModelServiceClassDef)
 
 
     def register_module(self, user_defined_module_name):
-        """
+        '''
         Register a python module according to user_defined_module_name
         This module should contain a valid Model Service Class whose
         pre-process and post-process can be derived and customized.
@@ -66,15 +75,18 @@ class ServingFrontend(object):
         ----------
         List of model service class definitions.
             Those python class can be used to initialize model service.
-        """
+        '''
         model_class_definations = self.service_manager.parse_modelservices_from_module(user_defined_module_name)
+        assert (len(model_class_definations) < 1, 
+            'No valid python class derived from Base Model Service is in module: %s' % user_defined_module_name)
+
         for ModelServiceClassDef in model_class_definations:
             self.service_manager.add_modelservice_to_registry(ModelServiceClassDef.__name__, ModelServiceClassDef)
 
         return model_class_definations
 
     def get_registered_modelservices(self, modelservice_names=None):
-        """
+        '''
         Get all registered Model Service Class Definitions into a dictionary 
         according to name or list of names. 
         If nothing is passed, all registered model services will be returned.
@@ -88,14 +100,14 @@ class ServingFrontend(object):
         ----------
         Dict of name, model service pairs
             Registered model services according to given names.
-        """
+        '''
         if not isinstance(modelservice_names, list) and modelservice_names is not None:
             modelservice_names = [modelservice_names]
 
         return self.service_manager.get_modelservices_registry(modelservice_names)
 
     def get_loaded_modelservices(self, modelservice_names=None):
-        """
+        '''
         Get all model services which are loaded in the system into a dictionary 
         according to name or list of names. 
         If nothing is passed, all loaded model services will be returned.
@@ -109,14 +121,14 @@ class ServingFrontend(object):
         ----------
         Dict of name, model service pairs
             Loaded model services according to given names.
-        """
+        '''
         if not isinstance(modelservice_names, list) and modelservice_names is not None:
             modelservice_names = [modelservice_names]
 
         return self.service_manager.get_loaded_modelservices(modelservice_names)
 
     def get_query_string(self, field):
-        """
+        '''
         Get field data in the query string from request.
 
         Parameters
@@ -128,11 +140,11 @@ class ServingFrontend(object):
         ----------
         Object
             Field data in query string.
-        """
+        '''
         return self.handler.get_query_string(field)
 
     def add_endpoint(self, api_definition, callback, **kwargs):
-        """
+        '''
         Add an endpoint with OpenAPI compatible api definition and callback.
 
         Parameters
@@ -145,15 +157,16 @@ class ServingFrontend(object):
 
         kwargs: dict
             Arguments for callback functions.
-        """
+        '''
         endpoint = api_definition.keys()[0]
         method = api_definition[endpoint].keys()[0]
         api_name = api_definition[endpoint][method]['operationId']
 
+        logger.info('Adding endpoint: %s to Flask' % api_name)
         self.handler.add_endpoint(api_name, endpoint, partial(callback, **kwargs), [method.upper()])
 
     def setup_openapi_endpoints(self, host, port):
-        """
+        '''
         Firstly, construct Openapi compatible api definition for 
         1. Predict
         2. Ping
@@ -168,7 +181,7 @@ class ServingFrontend(object):
 
         port: int
             Host that server will use 
-        """
+        '''
         modelservices = self.service_manager.get_loaded_modelservices()
         # TODO: not hardcode host:port
         self.openapi_endpoints = {
@@ -321,35 +334,36 @@ class ServingFrontend(object):
         return self.openapi_endpoints
     
     def ping_callback(self, **kwargs):
-        """
+        '''
         Callback function for ping endpoint.
             
         Returns
         ----------
         Response
             Http response for ping endpiont.
-        """
+        '''
         try:
             for model in self.service_manager.get_loaded_modelservices().values():
                 model.ping()
-        except:
+        except Exception, e:
+            logger.warn('Model serving is unhealthy.')
             return self.handler.jsonify({'health': 'unhealthy!'})
 
         return self.handler.jsonify({'health': 'healthy!'})
 
     def api_description(self, **kwargs):
-        """
+        '''
         Callback function for api description endpoint.
 
         Returns
         ----------
         Response
             Http response for api description endpiont.
-        """
+        '''
         return self.handler.jsonify({'description': self.openapi_endpoints})
 
     def predict_callback(self, **kwargs):
-        """
+        '''
         Callback for predict endpoint
 
         Parameters
@@ -364,7 +378,7 @@ class ServingFrontend(object):
         ----------
         Response
             Http response for predict endpiont.
-        """
+        '''
         modelservice = kwargs['modelservice']
         input_names = kwargs['input_names']
 
@@ -372,18 +386,45 @@ class ServingFrontend(object):
         output_type = modelservice.signature['output_type']
 
         # Get data from request according to input type
+        input_data = []
         if input_type == 'application/json':
-            data = map(self.handler.get_form_data, input_names)
+            try:
+                for name in input_names:
+                    logger.info('Request input: ' + name +  ' should be json tensor.')
+                    form_data = self.handler.get_form_data(name)
+                    assert isinstance(form_data, dict)
+                    input_data.append(form_data)
+            except:
+                raise Exception('Type for request argument %s is not correct. %s is expected but %s is given.' % 
+                    (name, input_type, type(form_data)))
         elif input_type == 'image/jpeg':
-            data = [self.handler.get_file_data(name).read() for name in input_names]
+            try:
+                for name in input_names:
+                    logger.info('Request input: ' + name +  ' should be image with jpeg format.')
+                    file_data = self.handler.get_file_data(name).read()
+                    assert isinstance(file_data, str)
+                    input_data.append(file_data)
+            except Exception, e:
+                raise Exception('Input data for request argument: %s is not correct. %s is expected but %s is given.' % 
+                    (str(e), input_type, type(file_data)))
         else:
+            logger.warn('%s is not supported for input content-type' % input_type)
             raise Exception('%s is not supported for input content-type' % input_type)
+
+        # Doing prediciton on model
+        try:
+            response = modelservice.inference(input_data)
+        except Exception, e:
+            raise Exception('MXNet prediction run-time error' % input_type)
 
         # Construct response according to output type
         if output_type == 'application/json':
-            return self.handler.jsonify({'prediction': modelservice.inference(data)})
+            logger.info('Response is prediction result.')
+            return self.handler.jsonify({'prediction': response})
         elif output_type == 'image/jpeg':
-            return self.handler.send_file(modelservice.inference(data), output_type)
+            logger.info('Response is image with jpeg format.')
+            return self.handler.send_file(response, output_type)
         else:
+            logger.warn('%s is not supported for input content-type' % output_type)
             raise Exception('%s is not supported for output content-type' % output_type)
 

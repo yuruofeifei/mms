@@ -20,7 +20,7 @@ class ServiceManager(object):
         self.modelservice_registry = KVStorage('modelservice')
         self.func_registry = KVStorage('func')
 
-        # loaded models
+        # loaded model services
         self.loaded_modelservices = KVStorage('loaded_modelservices')
 
     def get_modelservices_registry(self, modelservice_names=None):
