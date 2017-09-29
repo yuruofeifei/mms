@@ -19,7 +19,8 @@ class MMS(object):
             self.serving_frontend = ServingFrontend(app_name)
 
             logger.info('Initialized model serving.')
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             logger.error('Failed to initialize model serving: ' + str(e))
             exit(1)
         
@@ -57,7 +58,7 @@ class MMS(object):
 
             logger.info('Host is started at ' + self.host + ':' + str(self.port))
 
-        except Exception, e:
+        except Exception as e:
             logger.error('Failed to start model serving host: ' + str(e))
             exit(1)
         
@@ -66,5 +67,5 @@ def mms():
     mms = MMS()
     mms.start_model_serving()
 
-if __name__ =="__main__":
+if __name__ == '__main__':
     mms()

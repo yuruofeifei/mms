@@ -28,7 +28,7 @@ class ServingFrontend(object):
             self.handler = FlaskRequestHandler(app_name)
 
             logger.info('Initialized serving frontend.')
-        except Exception, e:
+        except Exception as e:
             raise Exception('Failed to initialize serving frontend: ' + str(e))
 
     def start_model_serving(self, host, port):
@@ -55,7 +55,7 @@ class ServingFrontend(object):
         ModelServiceClassDef: python class
             Model Service Class Definition which can initialize a model service.
         '''
-        for model_name, model_path in models.iteritems():
+        for model_name, model_path in models.items():
             self.service_manager.load_model(model_name, model_path, ModelServiceClassDef)
 
 
@@ -77,8 +77,7 @@ class ServingFrontend(object):
             Those python class can be used to initialize model service.
         '''
         model_class_definations = self.service_manager.parse_modelservices_from_module(user_defined_module_name)
-        assert (len(model_class_definations) < 1, 
-            'No valid python class derived from Base Model Service is in module: %s' % user_defined_module_name)
+        assert len(model_class_definations) >= 1, 'No valid python class derived from Base Model Service is in module: %s' % user_defined_module_name
 
         for ModelServiceClassDef in model_class_definations:
             self.service_manager.add_modelservice_to_registry(ModelServiceClassDef.__name__, ModelServiceClassDef)
@@ -158,8 +157,8 @@ class ServingFrontend(object):
         kwargs: dict
             Arguments for callback functions.
         '''
-        endpoint = api_definition.keys()[0]
-        method = api_definition[endpoint].keys()[0]
+        endpoint = list(api_definition.keys())[0]
+        method = list(api_definition[endpoint].keys())[0]
         api_name = api_definition[endpoint][method]['operationId']
 
         logger.info('Adding endpoint: %s to Flask' % api_name)
@@ -197,7 +196,7 @@ class ServingFrontend(object):
 
 
         # 1. Predict endpoints
-        for model_name, modelservice in modelservices.iteritems():
+        for model_name, modelservice in modelservices.items():
             input_type = modelservice.signature['input_type']
             inputs = modelservice.signature['inputs']
             output_type = modelservice.signature['output_type']
@@ -345,7 +344,7 @@ class ServingFrontend(object):
         try:
             for model in self.service_manager.get_loaded_modelservices().values():
                 model.ping()
-        except Exception, e:
+        except Exception:
             logger.warn('Model serving is unhealthy.')
             return self.handler.jsonify({'health': 'unhealthy!'})
 
@@ -388,6 +387,7 @@ class ServingFrontend(object):
         # Get data from request according to input type
         input_data = []
         if input_type == 'application/json':
+            form_data = None
             try:
                 for name in input_names:
                     logger.info('Request input: ' + name +  ' should be json tensor.')
@@ -398,13 +398,14 @@ class ServingFrontend(object):
                 raise Exception('Type for request argument %s is not correct. %s is expected but %s is given.' % 
                     (name, input_type, type(form_data)))
         elif input_type == 'image/jpeg':
+            file_data = None
             try:
                 for name in input_names:
                     logger.info('Request input: ' + name +  ' should be image with jpeg format.')
                     file_data = self.handler.get_file_data(name).read()
-                    assert isinstance(file_data, str)
+                    assert isinstance(file_data, (str, bytes))
                     input_data.append(file_data)
-            except Exception, e:
+            except Exception as e:
                 raise Exception('Input data for request argument: %s is not correct. %s is expected but %s is given.' % 
                     (str(e), input_type, type(file_data)))
         else:
@@ -414,7 +415,7 @@ class ServingFrontend(object):
         # Doing prediciton on model
         try:
             response = modelservice.inference(input_data)
-        except Exception, e:
+        except Exception as e:
             raise Exception('MXNet prediction run-time error' % input_type)
 
         # Construct response according to output type

@@ -9,12 +9,12 @@ logger = get_logger(__name__)
 
 
 class ClientSDKGenerator(object):
-    """Client SDK Generator using Swagger codegen tool
-    """
+    '''Client SDK Generator using Swagger codegen tool
+    '''
 
     @staticmethod
     def generate(openapi_endpoints, sdk_lanugage):
-        """Generate client sdk by given OpenAPI specification and target language.
+        '''Generate client sdk by given OpenAPI specification and target language.
 
         Parameters
         ----------
@@ -22,7 +22,7 @@ class ClientSDKGenerator(object):
             OpenAPI format api definition
         sdk_lanugage : string
             Target language for client sdk
-        """
+        '''
 
         # Serialize OpenAPI definition to a file
         try:
@@ -41,5 +41,6 @@ class ClientSDKGenerator(object):
                                               -l %s' % sdk_lanugage, shell=True, stdout=devnull)
             
             logger.info('Client SDK for %s is generated.' % sdk_lanugage)
-        except Exception, e:
+        except Exception:
+            e = sys.exc_info()[1]
             raise Exception('Failed to generate client sdk: ' + str(e))

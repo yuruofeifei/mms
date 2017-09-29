@@ -4,14 +4,14 @@ import argparse
 class StoreDictKeyPair(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         try: 
-          setattr(namespace, 'models', {kv.split("=", 1)[0]: kv.split("=", 1)[1] for kv in values})
-        except Exception, e:
+          setattr(namespace, 'models', {kv.split('=', 1)[0]: kv.split('=', 1)[1] for kv in values})
+        except Exception:
           raise Exception('Failed to parse <model=path>: ' + str(values) + 
                           ' Format should be <model-name>=<model-path> (Local file path, URL, S3).')
     
 class ArgParser(object):
-    """Argument parser
-    """
+    '''Argument parser
+    '''
 
 class ArgParser(object):
     @staticmethod
@@ -22,7 +22,7 @@ class ArgParser(object):
                             required=True,
                             action=StoreDictKeyPair,
                             metavar='KEY1=VAL1,KEY2=VAL2...',
-                            nargs="+",
+                            nargs='+',
                             help='Models to be deployed')
 
         parser.add_argument('--process', help='Using user defined model service')

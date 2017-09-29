@@ -13,7 +13,7 @@ SIGNATURE_FILE = 'signature.json'
 
 
 def _check_input_shape(inputs, signature):
-    """Check input data shape consistency with signature.
+    '''Check input data shape consistency with signature.
 
     Parameters
     ----------
@@ -21,28 +21,28 @@ def _check_input_shape(inputs, signature):
         Input data in NDArray format.
     signature : dict
         Dictionary containing model signature.
-    """
-    assert isinstance(inputs, list), "Input data must be a list."
-    assert len(inputs) == len(signature['inputs']), "Input number mismatches with " \
-                                           "signature. %d expected but got %d." \
+    '''
+    assert isinstance(inputs, list), 'Input data must be a list.'
+    assert len(inputs) == len(signature['inputs']), 'Input number mismatches with ' \
+                                           'signature. %d expected but got %d.' \
                                            % (len(signature['input']), len(inputs))
     for input, sig_input in zip(inputs, signature['inputs']):
-        assert isinstance(input, mx.nd.NDArray), "Each input must be NDArray."
+        assert isinstance(input, mx.nd.NDArray), 'Each input must be NDArray.'
         assert len(input.shape) == \
-               len(sig_input['data_shape']), "Shape dimension of input %s mismatches with " \
-                                "signature. %d expected but got %d." \
+               len(sig_input['data_shape']), 'Shape dimension of input %s mismatches with ' \
+                                'signature. %d expected but got %d.' \
                                 % (sig_input['data_name'], len(sig_input['data_shape']),
                                    len(input.shape))
         for idx in range(len(input.shape)):
             if idx != 0 and sig_input['data_shape'][idx] != 0:
                 assert sig_input['data_shape'][idx] == \
-                       input.shape[idx], "Input %s has different shape with " \
-                                         "signature. %s expected but got %s." \
+                       input.shape[idx], 'Input %s has different shape with ' \
+                                         'signature. %s expected but got %s.' \
                                          % (sig_input['data_name'], sig_input['data_shape'],
                                             input.shape)
 
 def _extrac_zip(zip_file, destination):
-    """Extract zip to destination without keeping directory structure
+    '''Extract zip to destination without keeping directory structure
 
         Parameters
         ----------
@@ -50,7 +50,7 @@ def _extrac_zip(zip_file, destination):
             Path to zip file.
         destination : str
             Destination directory.
-    """
+    '''
     with zipfile.ZipFile(zip_file) as file_buf:
         for item in file_buf.namelist():
             filename = os.path.basename(item)
@@ -60,16 +60,16 @@ def _extrac_zip(zip_file, destination):
 
             # copy file (taken from zipfile's extract)
             source = file_buf.open(item)
-            target = file(os.path.join(destination, filename), "wb")
+            target = open(os.path.join(destination, filename), 'wb')
             with source, target:
                 shutil.copyfileobj(source, target)
 
 
 class MXNetBaseService(SingleNodeService):
-    """MXNetBaseService defines the fundamental loading model and inference
+    '''MXNetBaseService defines the fundamental loading model and inference
        operations when serving MXNet model. This is a base class and needs to be
        inherited.
-    """
+    '''
     def __init__(self, path, synset=None, ctx=mx.cpu()):
         super(MXNetBaseService, self).__init__(path, ctx)
         curr_dir = os.getcwd()
@@ -84,9 +84,9 @@ class MXNetBaseService(SingleNodeService):
             os.mkdir(model_dir)
         try:
             _extrac_zip(model_file, model_dir)
-        except:
-            raise Exception('Failed to open model file %s for model %s'
-                            % (model_file, model_name))
+        except Exception as e:
+            raise Exception('Failed to open model file %s for model %s. Stacktrace: %s'
+                            % (model_file, model_name, e))
 
         signature_file_path = os.path.join(model_dir, SIGNATURE_FILE)
         if not os.path.isfile(signature_file_path):
@@ -127,7 +127,7 @@ class MXNetBaseService(SingleNodeService):
             self.labels = [line.strip() for line in open(synset).readlines()]
 
     def _inference(self, data):
-        """Internal inference methods for MXNet. Run forward computation and
+        '''Internal inference methods for MXNet. Run forward computation and
         return output.
 
         Parameters
@@ -139,31 +139,31 @@ class MXNetBaseService(SingleNodeService):
         -------
         list of NDArray
             Inference output.
-        """
+        '''
         # Check input shape
         _check_input_shape(data, self.signature)
         self.mx_model.forward(DataBatch(data))
         return self.mx_model.get_outputs()
 
     def ping(self):
-        """Ping to get system's health.
+        '''Ping to get system's health.
 
         Returns
         -------
         String
             MXNet version to show system is healthy.
-        """
+        '''
         return mx.__version__
 
     @property
     def signature(self):
-        """Signiture for model service.
+        '''Signiture for model service.
 
         Returns
         -------
         Dict
             Model service signiture.
-        """
+        '''
         return self._signature
 
 
