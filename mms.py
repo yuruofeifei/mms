@@ -41,8 +41,8 @@ class MMS(object):
             # Load models using registered model definitions
             registered_models = self.serving_frontend.get_registered_modelservices()
             ModelClassDef = registered_models[mode_class_name]
-            self.serving_frontend.load_models(self.args.model, ModelClassDef)
-            if len(self.args.model) > 5:
+            self.serving_frontend.load_models(self.args.models, ModelClassDef)
+            if len(self.args.models) > 5:
                 raise Exception('Model number exceeds our system limits: 5')
 
             # Setup endpoint
