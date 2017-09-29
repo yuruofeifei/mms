@@ -73,6 +73,7 @@ class MXNetBaseService(SingleNodeService):
     def __init__(self, path, synset=None, ctx=mx.cpu()):
         super(MXNetBaseService, self).__init__(path, ctx)
         curr_dir = os.getcwd()
+
         model_file = download(url=path, path=curr_dir) \
                      if path.lower().startswith(URL_PREFIX) else path
 

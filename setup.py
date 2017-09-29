@@ -10,7 +10,7 @@ setup(
     url='https://github.com/yuruofeifei/mms',
     keywords='MXNet Serving',
     packages=['utils'],
-    install_requires=["Flask", 'Pillow'],
+    install_requires=["Flask", 'Pillow', 'requests'],
     entry_points={
         'console_scripts':['mms=mms:mms', 'mms_export=export_model:export']
     },
