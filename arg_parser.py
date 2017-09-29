@@ -1,8 +1,13 @@
 import argparse
 
+
 class StoreDictKeyPair(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-        setattr(namespace, 'model', {kv.split("=", 1)[0]: kv.split("=", 1)[1] for kv in values})
+        try: 
+          setattr(namespace, 'models', {kv.split("=", 1)[0]: kv.split("=", 1)[1] for kv in values})
+        except Exception, e:
+          raise Exception('Failed to parse <model=path>: ' + str(values) + 
+                          ' Format should be <model-name>=<model-path> (Local file path, URL, S3).')
     
 class ArgParser(object):
     """Argument parser
@@ -47,7 +52,7 @@ class ArgParser(object):
                                    type=str,
                                    help='Path to synset file')
 
-        parser_export.add_argument('--destination',
+        parser_export.add_argument('--export-path',
                                    type=str,
                                    help='Path to exported model')
 

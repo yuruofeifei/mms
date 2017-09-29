@@ -51,17 +51,25 @@ class MXNetBaseService(SingleNodeService):
         curr_dir = os.getcwd()
         model_file = download(url=path, path=curr_dir) \
                      if path.lower().startswith(URL_PREFIX) else path
+        
         model_name = os.path.splitext(os.path.basename(model_file))[0]
         model_dir = '%s/%s' % (os.path.dirname(model_file), model_name)
-        with zipfile.ZipFile(model_file) as zip:
+        try:
+            zip = zipfile.ZipFile(model_file)
             zip.extractall(path=os.path.dirname(model_file))
+        except:
+            raise Exception('Failed to open model file %s for model %s' % (model_file, model_name))
 
         signature_file_path = '%s/%s' % (model_dir, SIGNATURE_FILE)
         if not os.path.isfile(signature_file_path):
             raise RuntimeError('Signature file is not found. Please put signature.json '
                                'into the model file directory.')
-        with open(signature_file_path) as signature_file:
+        try: 
+            signature_file = open(signature_file_path)
             self._signature = json.load(signature_file)
+        except:
+            raise Exception('Failed to open model signiture file: %s' % signature_file_path)
+
         data_names = []
         data_shapes = []
         for input in self._signature['inputs']:
