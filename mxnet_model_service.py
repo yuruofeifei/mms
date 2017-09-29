@@ -2,6 +2,7 @@ import mxnet as mx
 import numpy as np
 import zipfile
 import json
+import shutil
 import os
 
 from mxnet.gluon.utils import download
@@ -40,6 +41,29 @@ def _check_input_shape(inputs, signature):
                                          % (sig_input['data_name'], sig_input['data_shape'],
                                             input.shape)
 
+def _extrac_zip(zip_file, destination):
+    """Extract zip to destination without keeping directory structure
+
+        Parameters
+        ----------
+        zip_file : str
+            Path to zip file.
+        destination : str
+            Destination directory.
+    """
+    with zipfile.ZipFile(zip_file) as file_buf:
+        for item in file_buf.namelist():
+            filename = os.path.basename(item)
+            # skip directories
+            if not filename:
+                continue
+
+            # copy file (taken from zipfile's extract)
+            source = file_buf.open(item)
+            target = file(os.path.join(destination, filename), "wb")
+            with source, target:
+                shutil.copyfileobj(source, target)
+
 
 class MXNetBaseService(SingleNodeService):
     """MXNetBaseService defines the fundamental loading model and inference
@@ -51,14 +75,17 @@ class MXNetBaseService(SingleNodeService):
         curr_dir = os.getcwd()
         model_file = download(url=path, path=curr_dir) \
                      if path.lower().startswith(URL_PREFIX) else path
-        
+
+        model_file = os.path.abspath(model_file)
         model_name = os.path.splitext(os.path.basename(model_file))[0]
         model_dir = '%s/%s' % (os.path.dirname(model_file), model_name)
+        if not os.path.isdir(model_dir):
+            os.mkdir(model_dir)
         try:
-            zip = zipfile.ZipFile(model_file)
-            zip.extractall(path=os.path.dirname(model_file))
+            _extrac_zip(model_file, model_dir)
         except:
-            raise Exception('Failed to open model file %s for model %s' % (model_file, model_name))
+            raise Exception('Failed to open model file %s for model %s'
+                            % (model_file, model_name))
 
         signature_file_path = '%s/%s' % (model_dir, SIGNATURE_FILE)
         if not os.path.isfile(signature_file_path):
@@ -75,7 +102,9 @@ class MXNetBaseService(SingleNodeService):
         for input in self._signature['inputs']:
             data_names.append(input['data_name'])
             # Replace 0 entry in data shape with 1 for binding executor.
+            # Set batch size as 1
             data_shape = input['data_shape']
+            data_shape[0] = 1
             for idx in range(len(data_shape)):
                 if data_shape[idx] == 0:
                     data_shape[idx] = 1

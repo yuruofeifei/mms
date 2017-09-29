@@ -1,12 +1,13 @@
-import os
 import sys
 sys.path.append('../..')
 
 import unittest
 import mock
 import mxnet as mx
+import os
+import json
 from mxnet_vision_service import MXNetVisionService as mx_vision_service
-from utils.mxnet_utils import Image
+
 
 class TestServingFrontend(unittest.TestCase):
     def _train_and_export(self):
@@ -44,45 +45,45 @@ class TestServingFrontend(unittest.TestCase):
         with open('synset.txt', 'w') as synset:
             for i in range(10):
                 synset.write('test label %d\n' % (i))
-        mod.export_serving('test', 0, signature, use_synset=True)
+        with open('signature.json', 'w') as sig:
+            signature = {
+                "input_type": "image/jpeg",
+                "inputs": [
+                    {
+                        'data_name': 'data1',
+                        'data_shape': [1, 3, 64, 64]
+                    },
+                    {
+                        'data_name': 'data2',
+                        'data_shape': [1, 3, 32, 32]
+                    }
+                ],
+                "output_type": "application/json",
+                "outputs": [
+                    {
+                        'data_name': 'softmax',
+                        'data_shape': [1, 10]
+                    }
+                ]
+            }
+            json.dump(signature, sig)
+        mod.save_checkpoint('test', 0)
 
-    def test_vision_init(self):
+    def test_export(self):
         self._train_and_export()
-        model_path = 'test.zip'
-        service = mx_vision_service(path=model_path)
-        assert hasattr(service, 'labels'), "Fail to load synset file from model archive."
-        assert len(service.labels) > 0, "Labels attribute is empty."
+        model_name = 'test'
+        model_path = '.'
+        signature = 'signature.json'
+        synset = 'synset.txt'
+        export_path = '.'
 
-    def test_vision_inference(self):
-        self._train_and_export()
-        model_path = 'test.zip'
-        service = mx_vision_service(path=model_path)
+        cmd = 'python ../../export_model.py --model %s=%s --signature %s ' \
+              '--synset %s --export-path %s' % (model_name, model_path,
+                                                signature, synset, export_path)
+        os.system(cmd)
+        assert os.path.isfile('test.zip'), "No zip file is found. Export failed!"
 
-        raw_image1 = 'input1.jpg'
-        raw_image2 = 'input2.jpg'
-
-        # Test same size image inputs
-        data1 = mx.nd.random_uniform(0, 255, shape=(3, 64, 64))
-        data2 = mx.nd.random_uniform(0, 255, shape=(3, 32, 32))
-        Image.write(raw_image1, data1)
-        Image.write(raw_image2, data2)
-        img_buf1 = open(raw_image1, 'rb').read()
-        img_buf2 = open(raw_image1, 'rb').read()
-
-        output = service.inference([img_buf1, img_buf2])
-        assert len(output[0]) == 5
-
-        # test different size image inputs
-        data1 = mx.nd.random_uniform(0, 255, shape=(3, 96, 96))
-        data2 = mx.nd.random_uniform(0, 255, shape=(3, 24, 24))
-        Image.write(raw_image1, data1)
-        Image.write(raw_image2, data2)
-        img_buf1 = open(raw_image1, 'rb').read()
-        img_buf2 = open(raw_image1, 'rb').read()
-
-        output = service.inference([img_buf1, img_buf2])
-        assert len(output[0]) == 5
+        mx_vision_service('test.zip')
 
     def runTest(self):
-        self.test_vision_init()
-        self.test_vision_inference()
+        self.test_export()
