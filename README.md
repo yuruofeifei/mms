@@ -5,7 +5,7 @@ pip install mms
 ```
 ### Start serving
 ```python
-mms --models resnet-18=models/resnet-18.zip [--process mxnet_vision_service] [--gen-api python] [--port 8080]
+mms --models resnet-18=https://github.com/yuruofeifei/mms/raw/master/models/resnet-18.zip [--process mxnet_vision_service] [--gen-api python] [--port 8080]
 ```
 #### Arguments:
 1. models: required, model_name=model_path pairs, multiple models are supported.
