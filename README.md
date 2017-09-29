@@ -1,12 +1,21 @@
 ## Usage:
+### Installation
 ```python
-python mms.py --models resnet-18=models/resnet-18.zip [--process mxnet_vision_service] [--gen-api python] [--port 8080]
+pip install mms
 ```
-### Arguments:
+### Start serving
+```python
+mms --models resnet-18=models/resnet-18.zip [--process mxnet_vision_service] [--gen-api python] [--port 8080]
+```
+#### Arguments:
 1. models: required, model_name=model_path pairs, multiple models are supported.
 2. process: optional, our system will load input module and will initialize mxnet models with the service defined in the module. The module should contain a valid class extends our base model service with customized preprocess and postprocess.
 3. gen-api: optional, this will generate an open-api formated client sdk in build folder.
 4. port: optional, default 8080
+### Export existing model to serving model format
+```python
+mms_export --model resnet-18=models/resnet-18.zip --signature signature.json --synset synset.txt --export-path models
+```
 
 ## Endpoints:
 After local server is up, there will be three built-in endpoints:

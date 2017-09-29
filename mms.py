@@ -62,6 +62,9 @@ class MMS(object):
             exit(1)
         
 
-if __name__ == '__main__':
+def mms():
     mms = MMS()
     mms.start_model_serving()
+
+if __name__ =="__main__":
+    mms()

@@ -67,6 +67,9 @@ def _export_model(args):
           % (model_name, destination, model_name))
 
 
-if __name__ == '__main__':
+def export():
     args = ArgParser.parse_export_args()
     _export_model(args)
+
+if __name__ =="__main__":
+    export()

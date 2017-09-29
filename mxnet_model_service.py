@@ -78,7 +78,7 @@ class MXNetBaseService(SingleNodeService):
 
         model_file = os.path.abspath(model_file)
         model_name = os.path.splitext(os.path.basename(model_file))[0]
-        model_dir = '%s/%s' % (os.path.dirname(model_file), model_name)
+        model_dir = os.path.join(os.path.dirname(model_file), model_name)
         if not os.path.isdir(model_dir):
             os.mkdir(model_dir)
         try:
@@ -87,10 +87,10 @@ class MXNetBaseService(SingleNodeService):
             raise Exception('Failed to open model file %s for model %s'
                             % (model_file, model_name))
 
-        signature_file_path = '%s/%s' % (model_dir, SIGNATURE_FILE)
+        signature_file_path = os.path.join(model_dir, SIGNATURE_FILE)
         if not os.path.isfile(signature_file_path):
             raise RuntimeError('Signature file is not found. Please put signature.json '
-                               'into the model file directory.')
+                               'into the model file directory...' + signature_file_path)
         try: 
             signature_file = open(signature_file_path)
             self._signature = json.load(signature_file)
