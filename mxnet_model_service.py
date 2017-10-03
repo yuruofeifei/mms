@@ -12,7 +12,7 @@ from model_service import SingleNodeService, MultiNodesService, URL_PREFIX
 SIGNATURE_FILE = 'signature.json'
 
 
-def _check_input_shape(inputs, signature):
+def check_input_shape(inputs, signature):
     '''Check input data shape consistency with signature.
 
     Parameters
@@ -25,7 +25,7 @@ def _check_input_shape(inputs, signature):
     assert isinstance(inputs, list), 'Input data must be a list.'
     assert len(inputs) == len(signature['inputs']), 'Input number mismatches with ' \
                                            'signature. %d expected but got %d.' \
-                                           % (len(signature['input']), len(inputs))
+                                           % (len(signature['inputs']), len(inputs))
     for input, sig_input in zip(inputs, signature['inputs']):
         assert isinstance(input, mx.nd.NDArray), 'Each input must be NDArray.'
         assert len(input.shape) == \
@@ -72,31 +72,7 @@ class MXNetBaseService(SingleNodeService):
     '''
     def __init__(self, path, synset=None, ctx=mx.cpu()):
         super(MXNetBaseService, self).__init__(path, ctx)
-        curr_dir = os.getcwd()
-
-        model_file = download(url=path, path=curr_dir) \
-                     if path.lower().startswith(URL_PREFIX) else path
-
-        model_file = os.path.abspath(model_file)
-        model_name = os.path.splitext(os.path.basename(model_file))[0]
-        model_dir = os.path.join(os.path.dirname(model_file), model_name)
-        if not os.path.isdir(model_dir):
-            os.mkdir(model_dir)
-        try:
-            _extrac_zip(model_file, model_dir)
-        except Exception as e:
-            raise Exception('Failed to open model file %s for model %s. Stacktrace: %s'
-                            % (model_file, model_name, e))
-
-        signature_file_path = os.path.join(model_dir, SIGNATURE_FILE)
-        if not os.path.isfile(signature_file_path):
-            raise RuntimeError('Signature file is not found. Please put signature.json '
-                               'into the model file directory...' + signature_file_path)
-        try: 
-            signature_file = open(signature_file_path)
-            self._signature = json.load(signature_file)
-        except:
-            raise Exception('Failed to open model signiture file: %s' % signature_file_path)
+        model_dir, model_name = self._extract_model(path)
 
         data_names = []
         data_shapes = []
@@ -141,7 +117,7 @@ class MXNetBaseService(SingleNodeService):
             Inference output.
         '''
         # Check input shape
-        _check_input_shape(data, self.signature)
+        check_input_shape(data, self.signature)
         self.mx_model.forward(DataBatch(data))
         return self.mx_model.get_outputs()
 
@@ -165,5 +141,33 @@ class MXNetBaseService(SingleNodeService):
             Model service signiture.
         '''
         return self._signature
+
+    def _extract_model(self, path):
+        curr_dir = os.getcwd()
+        model_file = download(url=path, path=curr_dir) \
+            if path.lower().startswith(URL_PREFIX) else path
+
+        model_file = os.path.abspath(model_file)
+        model_name = os.path.splitext(os.path.basename(model_file))[0]
+        model_dir = os.path.join(os.path.dirname(model_file), model_name)
+        if not os.path.isdir(model_dir):
+            os.mkdir(model_dir)
+        try:
+            _extrac_zip(model_file, model_dir)
+        except Exception as e:
+            raise Exception('Failed to open model file %s for model %s. Stacktrace: %s'
+                            % (model_file, model_name, e))
+
+        signature_file_path = os.path.join(model_dir, SIGNATURE_FILE)
+        if not os.path.isfile(signature_file_path):
+            raise RuntimeError('Signature file is not found. Please put signature.json '
+                               'into the model file directory...' + signature_file_path)
+        try:
+            signature_file = open(signature_file_path)
+            self._signature = json.load(signature_file)
+        except:
+            raise Exception('Failed to open model signiture file: %s' % signature_file_path)
+
+        return model_dir, model_name
 
 

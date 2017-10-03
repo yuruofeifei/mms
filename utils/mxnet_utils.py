@@ -1,4 +1,5 @@
 import PIL
+from io import BytesIO
 import numpy as np
 import mxnet as mx
 from mxnet import rnn
@@ -95,22 +96,24 @@ class Image(object):
         return img.imdecode(buf, flag, to_rgb, out)
 
     @staticmethod
-    def write(filename, img_arr, flag=1):
-        """Write an NDArray
+    def write(img_arr, flag=1, format='jpeg'):
+        """Write an NDArray to image buffer
 
         Parameters
         ----------
-        filename : str
-            Name of the image file to be written to.
         img_arr : NDArray
-            Image in NDArray format with shape (channel, width, height)
+            Image in NDArray format with shape (channel, width, height).
         flag : {0, 1}, default 1
             1 for three channel color output. 0 for grayscale output.
+        format : str
+            Output image format.
         """
         img_arr = mx.nd.transpose(img_arr, (1,2,0)).astype(np.uint8).asnumpy()
         mode = 'RGB' if flag == 1 else 'L'
-        output = PIL.Image.fromarray(img_arr, mode)
-        output.save(filename)
+        image = PIL.Image.fromarray(img_arr, mode)
+        output = BytesIO()
+        image.save(output, format=format)
+        return output.getvalue()
 
     @staticmethod
     def resize(src, new_width, new_height, interp=2):
@@ -198,6 +201,7 @@ class Image(object):
         NDArray
             An `NDArray` containing the normalized image.
         """
+        src = src.astype(np.float32)
         return img.color_normalize(src, mean, std)
 
 class NDArray(object):

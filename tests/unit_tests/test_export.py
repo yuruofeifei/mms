@@ -9,7 +9,7 @@ import json
 from mxnet_vision_service import MXNetVisionService as mx_vision_service
 
 
-class TestServingFrontend(unittest.TestCase):
+class TestExport(unittest.TestCase):
     def _train_and_export(self):
         num_class = 10
         data1 = mx.sym.Variable('data1')
@@ -41,7 +41,6 @@ class TestServingFrontend(unittest.TestCase):
         mod.forward(data_batch)
         mod.backward()
         mod.update()
-        signature = {'input_type': 'image/jpeg', 'output_type': 'application/json'}
         with open('synset.txt', 'w') as synset:
             for i in range(10):
                 synset.write('test label %d\n' % (i))
