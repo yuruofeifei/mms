@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 sys.path.append('../..')
 
 import unittest
@@ -7,8 +8,9 @@ import mock
 import mxnet as mx
 from mxnet_vision_service import MXNetVisionService as mx_vision_service
 from utils.mxnet_utils import Image
+from service.pixel2pixel_service import UnetGenerator, Pixel2pixelService
 
-class TestServingFrontend(unittest.TestCase):
+class TestService(unittest.TestCase):
     def _train_and_export(self):
         num_class = 10
         data1 = mx.sym.Variable('data1')
@@ -58,16 +60,11 @@ class TestServingFrontend(unittest.TestCase):
         model_path = 'test.zip'
         service = mx_vision_service(path=model_path)
 
-        raw_image1 = 'input1.jpg'
-        raw_image2 = 'input2.jpg'
-
         # Test same size image inputs
         data1 = mx.nd.random_uniform(0, 255, shape=(3, 64, 64))
         data2 = mx.nd.random_uniform(0, 255, shape=(3, 32, 32))
-        Image.write(raw_image1, data1)
-        Image.write(raw_image2, data2)
-        img_buf1 = open(raw_image1, 'rb').read()
-        img_buf2 = open(raw_image1, 'rb').read()
+        img_buf1 = Image.write(data1)
+        img_buf2 = Image.write(data2)
 
         output = service.inference([img_buf1, img_buf2])
         assert len(output[0]) == 5
@@ -75,14 +72,58 @@ class TestServingFrontend(unittest.TestCase):
         # test different size image inputs
         data1 = mx.nd.random_uniform(0, 255, shape=(3, 96, 96))
         data2 = mx.nd.random_uniform(0, 255, shape=(3, 24, 24))
-        Image.write(raw_image1, data1)
-        Image.write(raw_image2, data2)
-        img_buf1 = open(raw_image1, 'rb').read()
-        img_buf2 = open(raw_image1, 'rb').read()
+        img_buf1 = Image.write(data1)
+        img_buf2 = Image.write(data2)
 
         output = service.inference([img_buf1, img_buf2])
         assert len(output[0]) == 5
 
+    def test_gluon_inference(self):
+        ctx = mx.cpu()
+        netG = UnetGenerator(in_channels=3, num_downs=8)
+        data = mx.nd.random_uniform(0, 255, shape=(1, 3, 256, 256))
+        netG.initialize(mx.init.Normal(0.02), ctx=ctx)
+        netG(data)
+        netG.save_params('gluon.params')
+        if not os.path.isdir('gluon-dir'):
+            os.mkdir('gluon-dir')
+        if os.path.isfile('test/signature.json'):
+            os.remove('test/signature.json')
+        with open('gluon-dir/signature.json', 'w') as sig:
+            signature = {
+                "input_type": "image/jpeg",
+                "inputs": [
+                    {
+                        'data_name': 'data',
+                        'data_shape': [1, 3, 256, 256]
+                    },
+                ],
+                "output_type": "image/jpeg",
+                "outputs": [
+                    {
+                        'data_name': 'output',
+                        'data_shape': [1, 3, 256, 256]
+                    }
+                ]
+            }
+            json.dump(signature, sig)
+        model_name = 'gluon'
+        model_path = '.'
+        signature = 'gluon-dir/signature.json'
+        export_path = '.'
+
+        cmd = 'python ../../export_model.py --model %s=%s --signature %s ' \
+              '--export-path %s' % (model_name, model_path,
+                                    signature, export_path)
+        #os.remove('gluon/signature.json')
+        os.system(cmd)
+
+        service = Pixel2pixelService('gluon.zip')
+        data = mx.nd.random_uniform(0, 255, shape=(3, 256, 256))
+        img_buf = Image.write(data)
+        service.inference([img_buf])
+
     def runTest(self):
         self.test_vision_init()
         self.test_vision_inference()
+        self.test_gluon_inference()
