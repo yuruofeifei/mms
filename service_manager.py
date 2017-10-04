@@ -1,5 +1,7 @@
 import ast
 import inspect
+import os
+import imp
 
 from storage import KVStorage
 from model_service import ModelService, SingleNodeService, MultiNodesService
@@ -100,21 +102,22 @@ class ServiceManager(object):
         '''
         self.loaded_modelservices[model_name] = ModelServiceClassDef(model_path)
 
-    def parse_modelservices_from_module(self, user_defined_module_name):
+    def parse_modelservices_from_module(self, service):
         '''
         Parse user defined module to get all model service classe in it.
 
         Parameters
         ----------
-        user_defined_module_name : Python module name
-            A python module will be parsed by given name.
+        service : Service script path or service module name
+            A python script or module which will be parsed by given name.
             
         Returns
         ----------
         List of model service class definitions.
             Those parsed python class can be used to initialize model service.
         '''
-        module = __import__(user_defined_module_name)
+        module =  imp.load_source(os.path.splitext(os.path.basename(service))[0], service) \
+            if os.path.isfile(service) else __import__(service)
 
         # Parsing the module to get all defined classes
         classes = [cls[1] for cls in inspect.getmembers(module, inspect.isclass)]

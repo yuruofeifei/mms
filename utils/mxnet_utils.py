@@ -112,8 +112,9 @@ class Image(object):
         mode = 'RGB' if flag == 1 else 'L'
         image = PIL.Image.fromarray(img_arr, mode)
         output = BytesIO()
-        image.save(output, format=format)
-        return output.getvalue()
+        image.save(output, format='JPEG')
+        output.seek(0)
+        return output
 
     @staticmethod
     def resize(src, new_width, new_height, interp=2):

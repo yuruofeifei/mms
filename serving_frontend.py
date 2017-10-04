@@ -406,7 +406,8 @@ class ServingFrontend(object):
                     assert isinstance(file_data, (str, bytes))
                     input_data.append(file_data)
             except Exception as e:
-                raise Exception('Input data for request argument: %s is not correct. %s is expected but %s is given.' % 
+                raise Exception('Input data for request argument: %s is not correct. %s is expected but %s '
+                                'is given.' %
                     (str(e), input_type, type(file_data)))
         else:
             logger.warn('%s is not supported for input content-type' % input_type)
@@ -424,6 +425,7 @@ class ServingFrontend(object):
             return self.handler.jsonify({'prediction': response})
         elif output_type == 'image/jpeg':
             logger.info('Response is image with jpeg format.')
+            import base64
             return self.handler.send_file(response, output_type)
         else:
             logger.warn('%s is not supported for input content-type' % output_type)

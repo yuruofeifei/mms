@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_file
 from log import get_logger
 from request_handler import RequestHandler
+from flask_cors import CORS
 
 
 logger = get_logger(__name__)
@@ -19,6 +20,7 @@ class FlaskRequestHandler(RequestHandler):
             App name for handler.
         '''
         self.app = Flask(app_name)
+        CORS(self.app)
 
     def start_handler(self, host, port):
         '''
@@ -33,8 +35,7 @@ class FlaskRequestHandler(RequestHandler):
         '''
         try:
             self.app.run(host=host, port=port)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             raise Exception('Flask handler failed to start: ' + str(e))
 
     def add_endpoint(self, api_name, endpoint, callback, methods):
@@ -59,8 +60,7 @@ class FlaskRequestHandler(RequestHandler):
         try:
             assert isinstance(methods, list), 'methods should be a list: [GET, POST] by Flask.'
             self.app.add_url_rule(endpoint, api_name, callback, methods=methods)
-        except Exception:
-            e = sys.exc_info()[1]
+        except Exception as e:
             raise Exception('Flask handler failed to add endpoints: ' + str(e))
         
     def get_query_string(self, field=None):
@@ -161,4 +161,4 @@ class FlaskRequestHandler(RequestHandler):
             Response with file to be sent.
         '''
         logger.info('Sending file with mimetype: ' + mimetype)
-        return send_file(file, mimetype)
+        return send_file(file, mimetype=mimetype)
