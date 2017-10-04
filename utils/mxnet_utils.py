@@ -4,6 +4,7 @@ import numpy as np
 import mxnet as mx
 from mxnet import rnn
 from mxnet import image as img
+import base64
 
 class NLP(object):
 
@@ -114,7 +115,7 @@ class Image(object):
         output = BytesIO()
         image.save(output, format='JPEG')
         output.seek(0)
-        return output
+        return base64.b64encode(output.getvalue())
 
     @staticmethod
     def resize(src, new_width, new_height, interp=2):
