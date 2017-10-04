@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 setup(
     py_modules=['mxnet_model_server', 'export_model'],
     name='mxnet-model-server',
-    version='0.1',
+    version='0.2',
     description='MXNet Model Serving',
     url='https://github.com/yuruofeifei/mms',
     keywords='MXNet Serving',
