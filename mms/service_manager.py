@@ -4,8 +4,8 @@ import os
 import imp
 
 from mms.storage import KVStorage
-from mms.model_service import ModelService, SingleNodeService, MultiNodesService
-#from mms.model_services.mxnet_vision_service import ModelVisionService, SingleNodeService, MultiNodesService
+from mms.model_service.model_service import ModelService
+import mms.model_service.mxnet_vision_service as mxnet_vision_service
 
 
 class ServiceManager(object):
@@ -118,11 +118,11 @@ class ServiceManager(object):
             Those parsed python class can be used to initialize model service.
         '''
         module =  imp.load_source(
-            os.path.splitext(os.path.basename(user_defined_module_file_path))[0], 
-            user_defined_module_file_path) 
+            os.path.splitext(os.path.basename(user_defined_module_file_path))[0],
+            user_defined_module_file_path) if user_defined_module_file_path \
+            else mxnet_vision_service
 
         # Parsing the module to get all defined classes
         classes = [cls[1] for cls in inspect.getmembers(module, inspect.isclass)]
-
         # Check if class is subclass of base ModelService class
         return list(filter(lambda cls: cls is not ModelService and issubclass(cls, ModelService), classes))

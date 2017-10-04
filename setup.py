@@ -6,7 +6,7 @@ setup(
     description='MXNet Model Serving',
     url='https://github.com/yuruofeifei/mms',
     keywords='MXNet Serving',
-    packages=['tools', 'mms', 'mms.model_services', 'mms.request_handlers', 'mms.utils'],
+    packages=['tools', 'mms', 'mms.model_service', 'mms.request_handler', 'mms.utils'],
     install_requires=['mxnet>=0.11.0', 'Flask', 'Pillow', 'requests'],
     entry_points={
         'console_scripts':['mxnet-model-server=mxnet_model_server:mms', 'mms-export=export_model:export']

@@ -30,7 +30,7 @@ class MMS(object):
             self.host = '127.0.0.1'
 
             # Register user defined model service or default mxnet_vision_service
-            class_defs = self.serving_frontend.register_module(self.args.process or 'mms/model_services/mxnet_vision_service.py')
+            class_defs = self.serving_frontend.register_module(self.args.process)
             if len(class_defs) < 2:
                 raise Exception('User defined module must derive base ModelService.')
             # First class is the base ModelService class

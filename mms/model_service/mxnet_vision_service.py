@@ -1,6 +1,6 @@
 import mxnet as mx
 
-from mms.model_services.mxnet_model_service import MXNetBaseService
+from mms.model_service.mxnet_model_service import MXNetBaseService
 from mms.utils.mxnet_utils import Image, NDArray
 
 

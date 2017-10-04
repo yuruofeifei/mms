@@ -2,7 +2,7 @@ import json
 from functools import partial
 
 from mms.service_manager import ServiceManager
-from mms.request_handlers.flask_handler import FlaskRequestHandler
+from mms.request_handler.flask_handler import FlaskRequestHandler
 from mms.log import get_logger
 
 
