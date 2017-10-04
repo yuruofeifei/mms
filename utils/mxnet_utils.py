@@ -113,7 +113,7 @@ class Image(object):
         mode = 'RGB' if flag == 1 else 'L'
         image = PIL.Image.fromarray(img_arr, mode)
         output = BytesIO()
-        image.save(output, format='JPEG')
+        image.save(output, format=format)
         output.seek(0)
         return base64.b64encode(output.getvalue())
 
