@@ -1,5 +1,4 @@
 import sys
-import os
 
 from arg_parser import ArgParser
 from log import get_logger
