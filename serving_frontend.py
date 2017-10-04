@@ -421,12 +421,11 @@ class ServingFrontend(object):
 
         # Construct response according to output type
         if output_type == 'application/json':
-            logger.info('Response is prediction result.')
+            logger.info('Response is text.')
             return self.handler.jsonify({'prediction': response})
         elif output_type == 'image/jpeg':
-            logger.info('Response is image with jpeg format.')
-            import base64
-            return self.handler.send_file(response, output_type)
+            logger.info('Response is jpeg image encoded in base64 string.')
+            return self.handler.jsonify({'prediction': response})
         else:
             logger.warn('%s is not supported for input content-type' % output_type)
             raise Exception('%s is not supported for output content-type' % output_type)
