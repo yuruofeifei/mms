@@ -4,7 +4,7 @@
 import os
 import json
 import zipfile
-from arg_parser import ArgParser
+from mms.arg_parser import ArgParser
 
 SIG_REQ_ENTRY = ['inputs', 'input_type', 'outputs', 'output_types']
 VALID_MIME_TYPE = ['image/jpeg', 'application/json']
