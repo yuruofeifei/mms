@@ -407,8 +407,7 @@ class ServingFrontend(object):
                     input_data.append(file_data)
             except Exception as e:
                 raise Exception('Input data for request argument: %s is not correct. %s is expected but %s '
-                                'is given.' %
-                    (str(e), input_type, type(file_data)))
+                                'is given.' % (str(e), input_type, type(file_data)))
         else:
             logger.warn('%s is not supported for input content-type' % input_type)
             raise Exception('%s is not supported for input content-type' % input_type)
@@ -417,7 +416,7 @@ class ServingFrontend(object):
         try:
             response = modelservice.inference(input_data)
         except Exception as e:
-            raise Exception('MXNet prediction run-time error' % input_type)
+            raise Exception('MXNet prediction run-time error')
 
         # Construct response according to output type
         if output_type == 'application/json':
